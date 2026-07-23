@@ -59,10 +59,10 @@ function TocSidebar({ items, activeId, onItemClick }: {
 
   if (collapsed) {
     return (
-      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-40">
+      <div className="fixed left-0 top-1/2 -translate-y-1/2 z-40">
         <button
           onClick={() => setCollapsed(false)}
-          className="w-10 h-10 flex items-center justify-center rounded-l-xl bg-surface border border-border border-r-0 text-muted hover:text-text transition-colors"
+          className="w-10 h-10 flex items-center justify-center rounded-r-xl bg-surface border border-border border-l-0 text-muted hover:text-text transition-colors"
           title="Show outline"
         >
           <ListTree size={18} />
@@ -72,34 +72,36 @@ function TocSidebar({ items, activeId, onItemClick }: {
   }
 
   return (
-    <aside className="fixed right-0 top-0 h-screen w-64 bg-background/80 backdrop-blur-sm border-l border-border overflow-y-auto z-40">
-      <div className="sticky top-0 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-muted uppercase tracking-wider">Outline</h3>
-        <button
-          onClick={() => setCollapsed(true)}
-          className="text-muted hover:text-text transition-colors"
-          title="Collapse"
-        >
-          <ListTree size={16} />
-        </button>
-      </div>
-      <nav className="p-3 space-y-0.5">
-        {items.map((item) => (
+    <aside className="hidden xl:block w-56 shrink-0 border-r border-border">
+      <div className="sticky top-0 px-4 py-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-semibold text-muted uppercase tracking-wider">Outline</h3>
           <button
-            key={item.id}
-            onClick={() => onItemClick(item.id)}
-            className={`block w-full text-left text-sm py-1.5 rounded-md transition-colors ${
-              item.level === 1 ? 'pl-2' : item.level === 2 ? 'pl-5' : 'pl-8'
-            } ${
-              activeId === item.id
-                ? 'text-orange-400 bg-orange-400/5 font-medium'
-                : 'text-text-dim hover:text-text hover:bg-surface'
-            }`}
+            onClick={() => setCollapsed(true)}
+            className="text-muted hover:text-text transition-colors"
+            title="Collapse"
           >
-            {item.text}
+            <ListTree size={16} />
           </button>
-        ))}
-      </nav>
+        </div>
+        <nav className="space-y-0.5">
+          {items.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => onItemClick(item.id)}
+              className={`block w-full text-left text-sm py-1.5 rounded-md transition-colors ${
+                item.level === 1 ? 'pl-2' : item.level === 2 ? 'pl-5' : 'pl-8'
+              } ${
+                activeId === item.id
+                  ? 'text-orange-400 bg-orange-400/5 font-medium'
+                  : 'text-text-dim hover:text-text hover:bg-surface'
+              }`}
+            >
+              {item.text}
+            </button>
+          ))}
+        </nav>
+      </div>
     </aside>
   )
 }
@@ -150,9 +152,12 @@ export default function MarkdownViewer({ content }: Props) {
 
   return (
     <div className="flex">
+      {toc.length > 0 && (
+        <TocSidebar items={toc} activeId={activeId} onItemClick={handleTocClick} />
+      )}
       <div
         ref={contentRef}
-        className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8 xl:pr-24"
+        className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-8"
       >
         <div className="prose prose-invert prose-lg max-w-none
           prose-headings:font-serif prose-headings:text-text prose-headings:scroll-mt-20
@@ -187,10 +192,6 @@ export default function MarkdownViewer({ content }: Props) {
           </ReactMarkdown>
         </div>
       </div>
-
-      {toc.length > 0 && (
-        <TocSidebar items={toc} activeId={activeId} onItemClick={handleTocClick} />
-      )}
     </div>
   )
 }

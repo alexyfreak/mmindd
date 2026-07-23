@@ -29,7 +29,7 @@ function domainFromUrl(url?: string | null): string | null {
 }
 
 export default function InspectorModal({ note, onClose, onTagClick }: Props) {
-  const { deleteNote, updateNote, setActiveFilter } = useNoteStore()
+  const { deleteNote, updateNote } = useNoteStore()
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [tags, setTags] = useState<string[]>(note.tags ?? [])
   const [tagInput, setTagInput] = useState('')
@@ -86,11 +86,7 @@ export default function InspectorModal({ note, onClose, onTagClick }: Props) {
   }
 
   const handleTagPillClick = (tag: string) => {
-    onClose()
-    setTimeout(() => {
-      setActiveFilter('all')
-      setTimeout(() => onTagClick?.(tag), 0)
-    }, 50)
+    onTagClick?.(tag)
   }
 
   return (

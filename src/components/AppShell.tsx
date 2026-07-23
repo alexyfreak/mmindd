@@ -27,7 +27,8 @@ export default function AppShell() {
       const q = searchQuery.toLowerCase()
       const matchesTitle = n.title?.toLowerCase().includes(q)
       const matchesContent = n.content?.toLowerCase().includes(q)
-      if (!matchesTitle && !matchesContent) return false
+      const matchesTags = n.tags?.some((t) => t.toLowerCase().includes(q))
+      if (!matchesTitle && !matchesContent && !matchesTags) return false
     }
     return true
   })
@@ -37,7 +38,7 @@ export default function AppShell() {
       case 'text':
         return <TextNoteCard key={note.id} note={note} onSelect={() => setSelectedNote(note)} />
       case 'image':
-        return <ImageNoteCard key={note.id} note={note} />
+        return <ImageNoteCard key={note.id} note={note} onSelect={() => setSelectedNote(note)} />
       case 'markdown':
         return <MarkdownCard key={note.id} note={note} onSelect={() => setSelectedNote(note)} />
     }

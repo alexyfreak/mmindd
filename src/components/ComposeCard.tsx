@@ -36,12 +36,12 @@ export default function ComposeCard() {
     setBusy(false)
   }
 
-  const submitMarkdown = async () => {
-    if (!mdContent.trim()) return
+  const submitMarkdown = async (markdown: string) => {
+    if (!markdown.trim()) return
     setBusy(true)
     setError('')
-    const title = mdContent.split('\n')[0].replace(/^#+ /, '').slice(0, 80) || undefined
-    const result = await addNote({ type: 'markdown', title, content: mdContent })
+    const title = markdown.split('\n')[0].replace(/^#+ /, '').slice(0, 80) || undefined
+    const result = await addNote({ type: 'markdown', title, content: markdown })
     if (result) reset()
     else setError('Failed to save note')
     setBusy(false)

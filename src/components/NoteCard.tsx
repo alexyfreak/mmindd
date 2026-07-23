@@ -26,9 +26,10 @@ function TextNoteCard({ note, onSelect }: { note: Note; onSelect?: () => void })
   )
 }
 
-function ImageNoteCard({ note }: { note: Note }) {
+function ImageNoteCard({ note, onSelect }: { note: Note; onSelect?: () => void }) {
   const [url, setUrl] = useState<string | null>(null)
   const deleteNote = useNoteStore((s) => s.deleteNote)
+  const [loadingUrl, setLoadingUrl] = useState(true)
 
   useEffect(() => {
     if (note.file_path) {
@@ -37,6 +38,7 @@ function ImageNoteCard({ note }: { note: Note }) {
         .createSignedUrl(note.file_path, 3600)
         .then(({ data }) => {
           if (data) setUrl(data.signedUrl)
+          setLoadingUrl(false)
         })
     }
   }, [note.file_path])
@@ -44,15 +46,16 @@ function ImageNoteCard({ note }: { note: Note }) {
   return (
     <CardWrapper>
       {note.title && <CardHeader title={note.title} />}
-      {url ? (
+      {loadingUrl ? (
+        <div className="w-full h-40 rounded-lg bg-surface animate-pulse cursor-pointer" onClick={onSelect} />
+      ) : url ? (
         <img
           src={url}
           alt={note.title ?? 'Note image'}
-          className="w-full rounded-lg object-cover max-h-96"
+          className="w-full rounded-lg object-cover max-h-96 cursor-pointer"
+          onClick={onSelect}
         />
-      ) : (
-        <div className="w-full h-40 rounded-lg bg-surface animate-pulse" />
-      )}
+      ) : null}
       <CardFooter createdAt={note.created_at} onDelete={() => deleteNote(note.id)} />
     </CardWrapper>
   )

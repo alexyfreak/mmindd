@@ -3,7 +3,7 @@ import { FileText, Image, FileCode, Loader2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useNoteStore } from '../stores/noteStore'
 import { useAuthStore } from '../stores/authStore'
-import SlashEditor from './SlashEditor'
+import MarkdownEditorModal from './MarkdownEditorModal'
 
 export default function ComposeCard() {
   const addNote = useNoteStore((s) => s.addNote)
@@ -179,44 +179,11 @@ export default function ComposeCard() {
       )}
 
       {mode === 'markdown' && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <FileCode size={16} className="text-accent shrink-0" />
-            <span className="text-xs font-medium text-text-dim">Markdown</span>
-            <span className="text-[10px] text-muted ml-auto">
-              Use <kbd className="px-1 py-0.5 rounded bg-border text-muted font-mono text-[10px]">/</kbd> for commands
-            </span>
-          </div>
-          <div className="rounded-xl bg-[#0d0e14] border border-border overflow-hidden">
-            <SlashEditor
-              initialContent={mdContent}
-              onChange={(md) => setMdContent(md)}
-              placeholder="Type '/' for commands…"
-              minHeight="120px"
-            />
-          </div>
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-            <div className="flex gap-2">
-              <button onClick={reset} className="text-xs text-muted hover:text-text transition-colors">
-                Cancel
-              </button>
-              <button
-                onClick={() => mdFileRef.current?.click()}
-                className="text-xs text-muted hover:text-text transition-colors flex items-center gap-1"
-              >
-                <FileCode size={12} />
-                Import .md
-              </button>
-            </div>
-            <button
-              onClick={submitMarkdown}
-              disabled={busy || !mdContent.trim()}
-              className="px-4 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-white text-xs font-medium transition-colors disabled:opacity-50"
-            >
-              {busy ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
-            </button>
-          </div>
-        </div>
+        <MarkdownEditorModal
+          initialContent={mdContent}
+          onSave={submitMarkdown}
+          onClose={reset}
+        />
       )}
 
       {busy && (

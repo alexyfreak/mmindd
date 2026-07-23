@@ -10,7 +10,8 @@ interface NotesState {
   activeFilter: FilterType
 
   fetchNotes: () => Promise<void>
-  addNote: (note: { type: NoteType; title?: string; content?: string; file_path?: string }) => Promise<Note | null>
+  addNote: (note: { type: NoteType; title?: string; content?: string; file_path?: string; domain?: string; source_url?: string }) => Promise<Note | null>
+  updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'tags' | 'tldr' | 'domain' | 'source_url'>>) => Promise<void>
   deleteNote: (id: string) => Promise<void>
   setSearchQuery: (query: string) => void
   setActiveFilter: (filter: FilterType) => void
@@ -41,7 +42,7 @@ export const useNoteStore = create<NotesState>((set, get) => ({
   addNote: async (note) => {
     const { data, error } = await supabase
       .from('notes')
-      .insert({ type: note.type, title: note.title, content: note.content, file_path: note.file_path })
+      .insert({ type: note.type, title: note.title, content: note.content, file_path: note.file_path, domain: note.domain, source_url: note.source_url })
       .select()
       .single()
 
@@ -52,6 +53,22 @@ export const useNoteStore = create<NotesState>((set, get) => ({
 
     set((s) => ({ notes: [data, ...s.notes] }))
     return data
+  },
+
+  updateNote: async (id, updates) => {
+    const { error } = await supabase
+      .from('notes')
+      .update(updates)
+      .eq('id', id)
+
+    if (error) {
+      set({ error: error.message })
+      return
+    }
+
+    set((s) => ({
+      notes: s.notes.map((n) => (n.id === id ? { ...n, ...updates } : n)),
+    }))
   },
 
   deleteNote: async (id) => {

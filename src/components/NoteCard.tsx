@@ -59,6 +59,8 @@ function ImageNoteCard({ note }: { note: Note }) {
 }
 
 function MarkdownCard({ note, onSelect }: { note: Note; onSelect?: () => void }) {
+  const deleteNote = useNoteStore((s) => s.deleteNote)
+
   return (
     <CardWrapper>
       <CardHeader title={note.title} />
@@ -67,7 +69,7 @@ function MarkdownCard({ note, onSelect }: { note: Note; onSelect?: () => void })
           <MarkdownNoteCard content={note.content} preview />
         </div>
       )}
-      <CardFooter createdAt={note.created_at} />
+      <CardFooter createdAt={note.created_at} onDelete={() => deleteNote(note.id)} />
     </CardWrapper>
   )
 }

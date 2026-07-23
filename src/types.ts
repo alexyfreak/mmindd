@@ -8,6 +8,10 @@ export interface Note {
   content?: string | null
   file_path?: string | null
   created_at: string
+  tags?: string[]
+  tldr?: string | null
+  domain?: string | null
+  source_url?: string | null
 }
 
 export type FilterType = NoteType | 'all'

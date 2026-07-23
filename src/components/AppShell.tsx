@@ -6,7 +6,7 @@ import FilterTabs from './FilterTabs'
 import IconRail from './IconRail'
 import ComposeCard from './ComposeCard'
 import { TextNoteCard, ImageNoteCard, MarkdownCard } from './NoteCard'
-import NoteDetailModal from './NoteDetailModal'
+import InspectorModal from './InspectorModal'
 import EmptyState from './EmptyState'
 import LoadingSkeleton from './LoadingSkeleton'
 
@@ -78,7 +78,11 @@ export default function AppShell() {
       </div>
 
       {selectedNote && (
-        <NoteDetailModal note={selectedNote} onClose={() => setSelectedNote(null)} />
+        <InspectorModal
+          note={selectedNote}
+          onClose={() => setSelectedNote(null)}
+          onTagClick={(tag) => setSearchQuery(tag)}
+        />
       )}
     </div>
   )

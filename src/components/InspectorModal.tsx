@@ -85,7 +85,8 @@ export default function InspectorModal({ note, onClose, onTagClick }: Props) {
     onClose()
   }
 
-  const handleTagPillClick = (tag: string) => {
+  const handleTagPillClick = (e: React.MouseEvent, tag: string) => {
+    e.stopPropagation()
     onTagClick?.(tag)
   }
 
@@ -140,7 +141,7 @@ export default function InspectorModal({ note, onClose, onTagClick }: Props) {
         </div>
       </div>
 
-      <div className="w-80 md:w-96 bg-[#141417] border-l border-[#26262b] flex flex-col overflow-y-auto shrink-0">
+      <div className="w-80 md:w-96 bg-[#141417] border-l border-[#26262b] flex flex-col overflow-y-auto shrink-0" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 space-y-5">
           <div>
             <p className="text-xs text-[#6b6d7b] mb-1">{relativeTime(note.created_at)}</p>
@@ -169,7 +170,7 @@ export default function InspectorModal({ note, onClose, onTagClick }: Props) {
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  onClick={() => handleTagPillClick(tag)}
+                  onClick={(e) => handleTagPillClick(e, tag)}
                   className="group cursor-pointer inline-flex items-center gap-1 bg-[#222227] text-xs px-2.5 py-1 rounded-md border border-[#2c2c34] text-[#a0a0ab] hover:border-accent/40 hover:text-[#e4e4e7] transition-colors"
                 >
                   <Hash size={10} />

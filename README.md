@@ -1,32 +1,94 @@
-# React + TypeScript + Vite
+# Vault — Private Personal Notes App
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A private, single-user "second brain" — a dark-themed notes app that replaces Telegram Saved Messages. Add notes as plain text, images, or `.md` files. They appear as cards in a masonry grid. Everything stored in Supabase, deployed on Vercel.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Vite + React 18 + TypeScript**
+- **Tailwind CSS v4** with `@tailwindcss/typography`
+- **Zustand** for state management
+- **Supabase JS v2** (Auth + Postgres + Storage) — no custom backend
+- **react-markdown + rehype-highlight + remark-gfm** for markdown rendering with syntax highlighting
+- **lucide-react** for icons
+- **Deploy target:** Vercel (static Vite build)
 
-## React Compiler
+## Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# Install dependencies
+npm install
 
-## Expanding the Oxlint configuration
+# Copy env template and fill in your Supabase credentials
+cp .env.example .env.local
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# Start dev server
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon/public key |
+
+## Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | TypeScript check + production build |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run Oxlint |
+
+## Features
+
+- **Email/password auth** — single-user, no sign-up
+- **Masonry grid layout** — CSS columns-based, no library needed
+- **3 note types:** Text, Image, Markdown
+- **Markdown viewer** with syntax highlighting (highlight.js), dynamic table of contents, and copy-code button
+- **Search & filter** — client-side filtering by title/content and note type
+- **Private file storage** — images and `.md` files stored in Supabase private bucket, served via signed URLs
+- **Dark theme** — near-black navy background with soft off-white text
+
+## Project Structure
+
+```
+src/
+├── App.tsx                  # Root: auth gate (Login vs Vault)
+├── main.tsx                 # Entry point
+├── index.css                # Tailwind + theme + typography plugin
+├── types.ts                 # Note & FilterType types
+├── lib/
+│   └── supabase.ts          # Supabase client singleton
+├── stores/
+│   ├── authStore.ts         # Zustand auth state (session, signIn, signOut)
+│   └── noteStore.ts         # Zustand notes state (CRUD, search, filters)
+└── components/
+    ├── LoginScreen.tsx       # Email + password login form
+    ├── AppShell.tsx          # Main layout after login
+    ├── TopBar.tsx            # Search input with ⌘K hint
+    ├── FilterTabs.tsx        # All / Text / Images / Markdown pills
+    ├── IconRail.tsx          # Fixed left icon rail (settings → logout)
+    ├── ComposeCard.tsx       # Add-note entry point (text/image/markdown)
+    ├── NoteCard.tsx          # Card variants (TextNoteCard, ImageNoteCard, MarkdownCard)
+    ├── MarkdownNoteCard.tsx  # Markdown preview card with syntax highlighting
+    ├── MarkdownViewer.tsx    # Full markdown viewer with TOC sidebar
+    ├── NoteDetailModal.tsx   # Detail modal / full-view overlay
+    ├── EmptyState.tsx        # Empty vault placeholder
+    └── LoadingSkeleton.tsx   # Loading skeleton cards
+```
+
+## Supabase Setup
+
+1. Create a Supabase project
+2. Run `supabase/schema.sql` in the SQL Editor
+3. Create a single user via the Auth dashboard or the admin API
+
+## Deployment
+
+```bash
+vercel --prod
+```
+
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Vercel project settings.

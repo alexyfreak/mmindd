@@ -1,25 +1,28 @@
-import { useState, useRef, type ChangeEvent } from 'react'
+import { useState, useRef, type ChangeEvent, useCallback } from 'react'
 import { FileText, Image, FileCode, Loader2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useNoteStore } from '../stores/noteStore'
 import { useAuthStore } from '../stores/authStore'
+import SlashEditor from './SlashEditor'
 
 export default function ComposeCard() {
   const addNote = useNoteStore((s) => s.addNote)
   const user = useAuthStore((s) => s.session?.user)
   const [mode, setMode] = useState<'closed' | 'select' | 'text' | 'image' | 'markdown'>('closed')
   const [textContent, setTextContent] = useState('')
+  const [mdContent, setMdContent] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
   const mdFileRef = useRef<HTMLInputElement>(null)
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setMode('closed')
     setTextContent('')
+    setMdContent('')
     setError('')
     setBusy(false)
-  }
+  }, [])
 
   const submitText = async () => {
     if (!textContent.trim()) return
@@ -28,6 +31,17 @@ export default function ComposeCard() {
     const title = textContent.split('\n')[0].slice(0, 80) || undefined
     const content = textContent.trim()
     const result = await addNote({ type: 'text', title, content })
+    if (result) reset()
+    else setError('Failed to save note')
+    setBusy(false)
+  }
+
+  const submitMarkdown = async () => {
+    if (!mdContent.trim()) return
+    setBusy(true)
+    setError('')
+    const title = mdContent.split('\n')[0].replace(/^#+ /, '').slice(0, 80) || undefined
+    const result = await addNote({ type: 'markdown', title, content: mdContent })
     if (result) reset()
     else setError('Failed to save note')
     setBusy(false)
@@ -79,7 +93,15 @@ export default function ComposeCard() {
 
   const handleMarkdownPick = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) uploadFile(file, 'markdown')
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const text = reader.result as string
+        setMdContent(text)
+        setMode('markdown')
+      }
+      reader.readAsText(file)
+    }
   }
 
   return (
@@ -113,7 +135,10 @@ export default function ComposeCard() {
             <span className="text-xs text-text-dim">Image</span>
           </button>
           <button
-            onClick={() => mdFileRef.current?.click()}
+            onClick={() => {
+              setMdContent('')
+              setMode('markdown')
+            }}
             className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-surface-hover hover:bg-border transition-colors flex-1"
           >
             <FileCode size={22} className="text-accent" />
@@ -145,6 +170,47 @@ export default function ComposeCard() {
             <button
               onClick={submitText}
               disabled={busy || !textContent.trim()}
+              className="px-4 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-white text-xs font-medium transition-colors disabled:opacity-50"
+            >
+              {busy ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mode === 'markdown' && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <FileCode size={16} className="text-accent shrink-0" />
+            <span className="text-xs font-medium text-text-dim">Markdown</span>
+            <span className="text-[10px] text-muted ml-auto">
+              Use <kbd className="px-1 py-0.5 rounded bg-border text-muted font-mono text-[10px]">/</kbd> for commands
+            </span>
+          </div>
+          <div className="rounded-xl bg-[#0d0e14] border border-border overflow-hidden">
+            <SlashEditor
+              initialContent={mdContent}
+              onChange={(md) => setMdContent(md)}
+              placeholder="Type '/' for commands…"
+              minHeight="120px"
+            />
+          </div>
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+            <div className="flex gap-2">
+              <button onClick={reset} className="text-xs text-muted hover:text-text transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={() => mdFileRef.current?.click()}
+                className="text-xs text-muted hover:text-text transition-colors flex items-center gap-1"
+              >
+                <FileCode size={12} />
+                Import .md
+              </button>
+            </div>
+            <button
+              onClick={submitMarkdown}
+              disabled={busy || !mdContent.trim()}
               className="px-4 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-white text-xs font-medium transition-colors disabled:opacity-50"
             >
               {busy ? <Loader2 size={14} className="animate-spin" /> : 'Save'}

@@ -1,7 +1,21 @@
 import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
 import LoginScreen from './components/LoginScreen'
 import AppShell from './components/AppShell'
+import Settings from './pages/Settings'
+import ThemeProvider from './components/ThemeProvider'
+
+function AuthenticatedApp() {
+  return (
+    <ThemeProvider>
+      <Routes>
+        <Route path="/" element={<AppShell />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+    </ThemeProvider>
+  )
+}
 
 export default function App() {
   const session = useAuthStore((s) => s.session)
@@ -20,5 +34,9 @@ export default function App() {
     )
   }
 
-  return session ? <AppShell /> : <LoginScreen />
+  return (
+    <BrowserRouter>
+      {session ? <AuthenticatedApp /> : <LoginScreen />}
+    </BrowserRouter>
+  )
 }

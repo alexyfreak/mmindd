@@ -1,6 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { Readability } from "npm:@mozilla/readability"
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
+
 function extractMeta(html: string, name: string): string {
   const patterns = [
     new RegExp(`<meta\\s+[^>]*property=["']og:${name}["'][^>]*content=["']([^"']*)["']`, "i"),
@@ -16,15 +22,19 @@ function extractMeta(html: string, name: string): string {
 }
 
 Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders })
+  }
+
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 })
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders })
   }
 
   const { url } = await req.json()
   if (!url || typeof url !== "string") {
     return new Response(JSON.stringify({ error: "url is required" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
   }
 
@@ -33,7 +43,7 @@ Deno.serve(async (req: Request) => {
   } catch {
     return new Response(JSON.stringify({ error: "invalid url" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
   }
 
@@ -47,7 +57,7 @@ Deno.serve(async (req: Request) => {
   if (!resp.ok) {
     return new Response(JSON.stringify({ error: `fetch failed: ${resp.status}` }), {
       status: 502,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
   }
 
@@ -102,6 +112,6 @@ Deno.serve(async (req: Request) => {
     tldr,
     tags: tagList,
   }), {
-    headers: { "Content-Type": "application/json" },
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   })
 })

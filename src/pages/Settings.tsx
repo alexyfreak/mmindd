@@ -7,9 +7,9 @@ import { fetchAndParseTheme, applyTheme, resetTheme } from '../lib/themeParser'
 
 const PRESETS = [
   { name: 'Tokyo Night', url: 'https://raw.githubusercontent.com/enkia/tokyo-night-vscode-theme/master/themes/tokyo-night-color-theme.json' },
-  { name: 'Dracula', url: 'https://raw.githubusercontent.com/dracula/visual-studio-code/master/src/dracula.theme.json' },
-  { name: 'Catppuccin Mocha', url: 'https://raw.githubusercontent.com/catppuccin/vscode/main/themes/mocha.json' },
-  { name: 'One Dark Pro', url: 'https://raw.githubusercontent.com/zhuangtongfa/OneDark-Pro/master/themes/OneDark-Pro.json' },
+  { name: 'Dracula', url: '/themes/dracula.json' },
+  { name: 'Catppuccin Mocha', url: '/themes/catppuccin-mocha.json' },
+  { name: 'One Dark Pro', url: 'https://raw.githubusercontent.com/Binaryify/OneDark-Pro/master/themes/OneDark-Pro.json' },
 ]
 
 export default function Settings() {

@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+import { Trash2, Globe } from 'lucide-react'
 import type { Note } from '../types'
 import { useNoteStore } from '../stores/noteStore'
 import { supabase } from '../lib/supabase'
@@ -77,6 +77,45 @@ function MarkdownCard({ note, onSelect }: { note: Note; onSelect?: () => void })
   )
 }
 
+function ArticleCard({ note, onSelect }: { note: Note; onSelect?: () => void }) {
+  const deleteNote = useNoteStore((s) => s.deleteNote)
+  const [imgError, setImgError] = useState(false)
+
+  return (
+    <CardWrapper>
+      {note.cover_image && !imgError && (
+        <img
+          src={note.cover_image}
+          alt=""
+          onError={() => setImgError(true)}
+          className="w-full h-36 object-cover rounded-lg mb-3 cursor-pointer"
+          onClick={onSelect}
+        />
+      )}
+      <div className="cursor-pointer" onClick={onSelect}>
+        <div className="flex items-center gap-1.5 mb-1">
+          <Globe size={11} className="text-muted" />
+          <span className="text-[10px] text-muted truncate">{note.domain || 'web'}</span>
+        </div>
+        {note.title && <CardHeader title={note.title} />}
+        {note.tldr && (
+          <p className="text-xs text-text-dim leading-relaxed line-clamp-3">{note.tldr}</p>
+        )}
+        {note.tags && note.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {note.tags.slice(0, 3).map((tag) => (
+              <span key={tag} className="text-[9px] text-muted bg-[#1a1a1e] px-1.5 py-0.5 rounded-md border border-[#2c2c34]">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+      <CardFooter createdAt={note.created_at} onDelete={() => deleteNote(note.id)} />
+    </CardWrapper>
+  )
+}
+
 function CardWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="break-inside-avoid mb-4 rounded-2xl bg-surface border border-border p-5 hover:border-border/60 transition-all hover:-translate-y-0.5">
@@ -118,4 +157,4 @@ function CardFooter({
   )
 }
 
-export { TextNoteCard, ImageNoteCard, MarkdownCard, CardWrapper }
+export { TextNoteCard, ImageNoteCard, MarkdownCard, ArticleCard, CardWrapper }

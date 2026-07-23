@@ -1,4 +1,4 @@
-export type NoteType = 'text' | 'image' | 'markdown'
+export type NoteType = 'text' | 'image' | 'markdown' | 'article' | 'web_page'
 
 export interface Note {
   id: string
@@ -7,6 +7,7 @@ export interface Note {
   title?: string | null
   content?: string | null
   file_path?: string | null
+  cover_image?: string | null
   created_at: string
   tags?: string[]
   tldr?: string | null
@@ -14,4 +15,4 @@ export interface Note {
   source_url?: string | null
 }
 
-export type FilterType = NoteType | 'all'
+export type FilterType = NoteType | 'all' | 'articles'

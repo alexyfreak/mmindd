@@ -10,8 +10,8 @@ interface NotesState {
   activeFilter: FilterType
 
   fetchNotes: () => Promise<void>
-  addNote: (note: { type: NoteType; title?: string; content?: string; file_path?: string; domain?: string; source_url?: string }) => Promise<Note | null>
-  updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'tags' | 'tldr' | 'domain' | 'source_url'>>) => Promise<void>
+  addNote: (note: { type: NoteType; title?: string; content?: string; file_path?: string; cover_image?: string; domain?: string; source_url?: string; tags?: string[]; tldr?: string }) => Promise<Note | null>
+  updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'tags' | 'tldr' | 'domain' | 'source_url' | 'cover_image'>>) => Promise<void>
   deleteNote: (id: string) => Promise<void>
   setSearchQuery: (query: string) => void
   setActiveFilter: (filter: FilterType) => void
@@ -42,7 +42,7 @@ export const useNoteStore = create<NotesState>((set, get) => ({
   addNote: async (note) => {
     const { data, error } = await supabase
       .from('notes')
-      .insert({ type: note.type, title: note.title, content: note.content, file_path: note.file_path, domain: note.domain, source_url: note.source_url })
+      .insert({ type: note.type, title: note.title, content: note.content, file_path: note.file_path, cover_image: note.cover_image, domain: note.domain, source_url: note.source_url, tags: note.tags, tldr: note.tldr })
       .select()
       .single()
 

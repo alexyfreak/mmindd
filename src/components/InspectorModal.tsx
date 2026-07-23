@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { X, Star, Share2, Trash2, Plus, Hash } from 'lucide-react'
+import { X, Star, Share2, Trash2, Plus, Hash, Globe } from 'lucide-react'
 import type { Note } from '../types'
 import { useNoteStore } from '../stores/noteStore'
 import { supabase } from '../lib/supabase'
@@ -136,6 +136,26 @@ export default function InspectorModal({ note, onClose, onTagClick }: Props) {
           {note.type === 'markdown' && note.content && (
             <div className="p-6 max-w-4xl">
               <MarkdownViewer content={note.content} />
+            </div>
+          )}
+          {(note.type === 'article' || note.type === 'web_page') && (
+            <div className="p-6 max-w-4xl">
+              {note.cover_image && (
+                <img
+                  src={note.cover_image}
+                  alt={note.title ?? ''}
+                  className="w-full max-h-80 object-cover rounded-xl mb-6"
+                />
+              )}
+              {note.domain && (
+                <div className="flex items-center gap-2 mb-4 text-xs text-[#6b6d7b]">
+                  <Globe size={13} />
+                  <span>{note.domain}</span>
+                </div>
+              )}
+              {note.content && (
+                <p className="text-sm text-[#a1a3b0] leading-relaxed whitespace-pre-wrap">{note.content}</p>
+              )}
             </div>
           )}
         </div>

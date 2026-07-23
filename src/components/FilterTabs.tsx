@@ -1,4 +1,4 @@
-import { FileText, Image, FileCode, Layers } from 'lucide-react'
+import { FileText, Image, FileCode, Layers, Globe } from 'lucide-react'
 import type { FilterType } from '../types'
 
 const tabs: { id: FilterType; label: string; icon: React.ReactNode }[] = [
@@ -6,6 +6,7 @@ const tabs: { id: FilterType; label: string; icon: React.ReactNode }[] = [
   { id: 'text', label: 'Text', icon: <FileText size={14} /> },
   { id: 'image', label: 'Images', icon: <Image size={14} /> },
   { id: 'markdown', label: 'Markdown', icon: <FileCode size={14} /> },
+  { id: 'articles', label: 'Articles', icon: <Globe size={14} /> },
 ]
 
 interface Props {

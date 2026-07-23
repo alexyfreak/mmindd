@@ -5,7 +5,7 @@ import TopBar from './TopBar'
 import FilterTabs from './FilterTabs'
 import IconRail from './IconRail'
 import ComposeCard from './ComposeCard'
-import { TextNoteCard, ImageNoteCard, MarkdownCard } from './NoteCard'
+import { TextNoteCard, ImageNoteCard, MarkdownCard, ArticleCard } from './NoteCard'
 import InspectorModal from './InspectorModal'
 import EmptyState from './EmptyState'
 import LoadingSkeleton from './LoadingSkeleton'
@@ -22,7 +22,11 @@ export default function AppShell() {
   }, [fetchNotes])
 
   const filtered = notes.filter((n) => {
-    if (activeFilter !== 'all' && n.type !== activeFilter) return false
+    if (activeFilter === 'articles') {
+      if (n.type !== 'article' && n.type !== 'web_page') return false
+    } else if (activeFilter !== 'all' && n.type !== activeFilter) {
+      return false
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       const matchesTitle = n.title?.toLowerCase().includes(q)
@@ -41,6 +45,9 @@ export default function AppShell() {
         return <ImageNoteCard key={note.id} note={note} onSelect={() => setSelectedNote(note)} />
       case 'markdown':
         return <MarkdownCard key={note.id} note={note} onSelect={() => setSelectedNote(note)} />
+      case 'article':
+      case 'web_page':
+        return <ArticleCard key={note.id} note={note} onSelect={() => setSelectedNote(note)} />
     }
   }
 

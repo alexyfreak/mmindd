@@ -17,7 +17,7 @@ interface ExtractedData {
   tags: string[]
 }
 
-const SUPABASE_EDGE_FUNCTION_URL = 'https://biyzfegpwepvzvwynhdj.supabase.co/functions/v1/extract-link'
+const SUPABASE_EDGE_FUNCTION_URL = 'https://ixwujmimgafnckqlezud.supabase.co/functions/v1/extract-link'
 
 export default function ComposeCard() {
   const addNote = useNoteStore((s) => s.addNote)

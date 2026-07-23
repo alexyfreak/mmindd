@@ -1,6 +1,19 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { Readability } from "npm:@mozilla/readability"
-import { JSDOM } from "npm:jsdom"
+
+function extractMeta(html: string, name: string): string {
+  const patterns = [
+    new RegExp(`<meta\\s+[^>]*property=["']og:${name}["'][^>]*content=["']([^"']*)["']`, "i"),
+    new RegExp(`<meta\\s+[^>]*content=["']([^"']*)["'][^>]*property=["']og:${name}["']`, "i"),
+    new RegExp(`<meta\\s+[^>]*name=["']${name}["'][^>]*content=["']([^"']*)["']`, "i"),
+    new RegExp(`<meta\\s+[^>]*content=["']([^"']*)["'][^>]*name=["']${name}["']`, "i"),
+  ]
+  for (const p of patterns) {
+    const m = html.match(p)
+    if (m) return m[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+  }
+  return ""
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
@@ -24,80 +37,70 @@ Deno.serve(async (req: Request) => {
     })
   }
 
-  const response = await fetch(url, {
+  const resp = await fetch(url, {
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.5",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      Accept: "text/html,application/xhtml+xml",
     },
   })
 
-  if (!response.ok) {
-    return new Response(JSON.stringify({ error: `fetch failed: ${response.status}` }), {
+  if (!resp.ok) {
+    return new Response(JSON.stringify({ error: `fetch failed: ${resp.status}` }), {
       status: 502,
       headers: { "Content-Type": "application/json" },
     })
   }
 
-  const html = await response.text()
-  const dom = new JSDOM(html, { url })
-  const doc = dom.window.document
-
-  const ogTitle = doc.querySelector("meta[property='og:title']")?.getAttribute("content")
-  const ogImage = doc.querySelector("meta[property='og:image']")?.getAttribute("content")
-  const ogSite = doc.querySelector("meta[property='og:site_name']")?.getAttribute("content")
-  const ogDesc = doc.querySelector("meta[property='og:description']")?.getAttribute("content")
-  const metaDesc = doc.querySelector("meta[name='description']")?.getAttribute("content")
-  const metaKeywords = doc.querySelector("meta[name='keywords']")?.getAttribute("content")
-
-  const title = ogTitle || doc.title || ""
-  const description = ogDesc || metaDesc || ""
-  const siteName = ogSite || new URL(url).hostname.replace("www.", "")
-  const coverImage = ogImage || ""
+  const html = await resp.text()
+  const title = (html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] ?? "").trim() || extractMeta(html, "title")
+  const coverImage = extractMeta(html, "image")
+  const description = extractMeta(html, "description")
+  const metaKeywords = extractMeta(html, "keywords")
+  const siteName = extractMeta(html, "site_name") || new URL(url).hostname.replace("www.", "")
+  const domain = new URL(url).hostname.replace("www.", "")
   const tldr = description.length > 500 ? description.slice(0, 500) + "…" : description
 
-  const domain = new URL(url).hostname.replace("www.", "")
-  const tags = metaKeywords
+  const tagList: string[] = metaKeywords
     ? metaKeywords.split(",").map((k: string) => k.trim()).filter(Boolean).slice(0, 5)
     : []
-  if (!tags.includes("article")) tags.unshift("article")
-  if (!tags.includes(domain)) tags.push(domain)
+  if (!tagList.includes("article")) tagList.unshift("article")
+  if (!tagList.includes(domain)) tagList.push(domain)
 
-  const reader = new Readability(doc)
-  const article = reader.parse()
+  let textContent = description
+  let articleContent = ""
 
-  if (!article) {
-    return new Response(JSON.stringify({
-      title,
-      cover_image: coverImage,
-      domain,
-      site_name: siteName,
-      tldr,
-      tags: ["article", domain],
-      content: "",
-      text_content: "",
-      excerpt: description,
-    }), {
-      headers: { "Content-Type": "application/json" },
-    })
-  }
-
-  let textContent = article.textContent.trim()
-  if (textContent.length > 10000) {
-    textContent = textContent.slice(0, 10000) + "\n\n…"
+  try {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, "text/html")
+    const reader = new Readability(doc)
+    const article = reader.parse()
+    if (article) {
+      articleContent = article.content
+      textContent = article.textContent.trim()
+      if (textContent.length > 10000) {
+        textContent = textContent.slice(0, 10000) + "\n\n…"
+      }
+    }
+  } catch {
+    textContent = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 10000)
   }
 
   return new Response(JSON.stringify({
     title,
     cover_image: coverImage,
-    content: article.content,
+    content: articleContent,
     text_content: textContent,
-    excerpt: article.excerpt,
+    excerpt: description,
     domain,
     site_name: siteName,
     tldr,
-    tags,
+    tags: tagList,
   }), {
     headers: { "Content-Type": "application/json" },
   })
